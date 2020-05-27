@@ -8,10 +8,10 @@ import Image from "react-bootstrap/Image";
 import Button from "react-bootstrap/Button";
 import OpenWithIcon from "@material-ui/icons/OpenWith";
 import MeetingRoomIcon from "@material-ui/icons/MeetingRoom";
-import AliceCarousel from "react-alice-carousel";
 import MapContainer from "./mapContainer";
-
-const handleOnDragStart = (e) => e.preventDefault();
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 class PostPage extends Component {
   constructor(props) {
@@ -82,13 +82,43 @@ class PostPage extends Component {
       lat: this.state.post.latitude,
     };
     console.log(marker);
+    var settings = {
+      dots: true,
+      infinite: true,
+      speed: 500,
+    };
     return (
       <div className="container-fluid">
         <div
           className="row justify-content-center m-2 p-2 pt-3 text-center h-25"
           key={this.state.post._id}
         >
-          <AliceCarousel
+          <div>
+            <Slider {...settings}>
+              <div>
+                <img
+                  src={this.state.post.photoBase64}
+                  width="100%"
+                  // width="25%"
+                />
+              </div>
+              <div>
+                <img
+                  src={this.state.post.photoBase64}
+                  width="100%"
+                  // width="25%"
+                />
+              </div>
+              <div>
+                <img
+                  src={this.state.post.photoBase64}
+                  width="100%"
+                  // width="25%"
+                />
+              </div>
+            </Slider>
+          </div>
+          {/* <AliceCarousel
             mouseTrackingEnabled
             buttonsDisabled
             touchTrackingEnabled
@@ -108,7 +138,7 @@ class PostPage extends Component {
               onDragStart={handleOnDragStart}
               width="25%"
             />
-          </AliceCarousel>
+          </AliceCarousel> */}
         </div>
         <h2 className="row justify-content-center p-2 pt-3 border">
           <div className="col-5" align="center">
