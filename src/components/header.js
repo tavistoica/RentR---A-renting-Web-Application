@@ -16,6 +16,7 @@ import InboxIcon from "@material-ui/icons/Inbox";
 import IconButton from "@material-ui/core/IconButton";
 import Divider from "@material-ui/core/Divider";
 import SortBar from "./sortBar";
+import Search from "./search";
 
 class Header extends Component {
   constructor(props) {
@@ -24,11 +25,12 @@ class Header extends Component {
       menuOpen: false,
       avatar: "",
       firstName: "",
+      lastName: "",
+      query: "",
     };
     this.signOut = this.signOut.bind(this);
     this.closeMenu = this.closeMenu.bind(this);
     this.logged = this.logged.bind(this);
-    this.unlogged = this.unlogged.bind(this);
     this.inboxRedirect = this.inboxRedirect.bind(this);
   }
 
@@ -40,6 +42,7 @@ class Header extends Component {
       this.setState({
         avatar: response.data.avatar,
         firstName: response.data.firstName,
+        lastName: response.data.lastName,
       });
     } catch (e) {
       this.setState({
@@ -49,25 +52,14 @@ class Header extends Component {
     }
   }
 
-  async unlogged() {
-    const jwtToken = localStorage.getItem("JWT_TOKEN");
-    Axios.defaults.headers.common["Authorization"] = jwtToken;
-    try {
-      const response = await Axios.get(ipAdress + ":5001/users/avatar");
-      this.setState({
-        firstName: response.data.firstName,
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  }
+  handleInputChange = () => {
+    this.setState({
+      query: this.search.value,
+    });
+  };
 
   async componentDidMount() {
-    if (this.props.isAuth) {
-      this.logged();
-    } else {
-      this.unlogged();
-    }
+    if (this.props.isAuth) this.logged();
   }
 
   inboxRedirect() {
@@ -88,6 +80,20 @@ class Header extends Component {
     this.props.SignOut();
   }
 
+  renderFunc = ({ getInputProps, getSuggestionItemProps, suggestions }) => (
+    <div className="autocomplete-root">
+      <input {...getInputProps()} />
+      <div className="autocomplete-dropdown-container">
+        {<div>Loading...</div>}
+        {suggestions.map((suggestion) => (
+          <div {...getSuggestionItemProps(suggestion)}>
+            <span>{suggestion.description}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   menuRenderer() {
     let $avatarPreview = null;
     $avatarPreview = (
@@ -100,17 +106,31 @@ class Header extends Component {
         />
       </div>
     );
+    const trigger = (
+      <span style={{ color: "white" }}>
+        <div className="custom-file-upload mr-2">
+          <Image
+            avatar
+            src={this.state.avatar}
+            width="40vh"
+            height="40vh"
+            roundedCircle
+          />
+        </div>
+        {this.state.firstName + " " + this.state.lastName}
+      </span>
+    );
     const options = [
       {
         key: "profile",
-        icon: "address card",
+        icon: "user",
         text: "profile",
         value: "profile",
         href: "/profile",
       },
       {
         key: "logout",
-        icon: "logout",
+        icon: "sign out",
         text: "logout",
         value: "logout",
         onClick: this.signOut,
@@ -166,16 +186,19 @@ class Header extends Component {
     } else {
       return (
         <>
-          <div className="nav navbar-nav">
-            <Link to="/" style={{ color: "white", fontSize: 30 }}>
-              RentR
-            </Link>
-          </div>
-          <ul className="nav navbar-nav navbar-right">
+          <Link class="navbar-brand col-1" to="/" style={{ color: "white" }}>
+            RentR
+          </Link>
+          <Search
+            value={this.state.value}
+            onChange={(value) => this.setState({ value })}
+          >
+            {this.renderFunc}
+          </Search>
+          <ul className="nav navbar-nav navbar-right col-1">
             <li>
               {!this.props.isAuth ? (
                 <>
-                  {/* <LoginPopup {...this.props} /> */}
                   <Link
                     className="nav-link"
                     to="/signin"
@@ -186,7 +209,7 @@ class Header extends Component {
                 </>
               ) : null}
               {this.props.isAuth ? (
-                <div className="row justify-content-center">
+                <div className="row justify-content-center pr-3">
                   <IconButton
                     size="medium"
                     color="secondary"
@@ -196,19 +219,12 @@ class Header extends Component {
                   </IconButton>
                   <Divider orientation="vertical" flexItem />
                   <Dropdown
-                    icon={$avatarPreview}
-                    pointing
-                    className="link item"
-                  >
-                    <Dropdown.Menu>
-                      <Dropdown.Item href="/profile" icon="address card">
-                        Profile
-                      </Dropdown.Item>
-                      <Dropdown.Item onClick={this.signOut} icon="logout">
-                        Logout
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                    trigger={trigger}
+                    options={options}
+                    pointing="top right"
+                    floating
+                    icon={null}
+                  />
                 </div>
               ) : null}
             </li>
@@ -222,12 +238,11 @@ class Header extends Component {
     return (
       <div className="sticky-top">
         <nav
-          className="navbar navbar-inverse "
+          className="navbar navbar-light bg-dark container-fluid"
           style={{ backgroundColor: "#48a832" }}
         >
           {this.menuRenderer()}
         </nav>
-        <SortBar />
       </div>
     );
   }

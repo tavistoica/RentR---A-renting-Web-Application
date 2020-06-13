@@ -25,7 +25,7 @@ class ChangeEmail extends Component {
   renderForm() {
     const { handleSubmit } = this.props;
     return (
-      <form className="col-9" onSubmit={handleSubmit(this.onSubmit)}>
+      <form className="col-9 pt-4" onSubmit={handleSubmit(this.onSubmit)}>
         {this.props.errorMessage ? (
           <div className="alert alert-danger ">{this.props.errorMessage}</div>
         ) : null}
@@ -45,9 +45,11 @@ class ChangeEmail extends Component {
           placeholder={"new email"}
           component={CustomInput}
         />
-        <Button type="submit" className="btn btn-block mr-auto">
-          Edit
-        </Button>
+        <div className="row justify-content-center ml-5 mr-5 pt-3">
+          <Button type="submit" className="btn btn-block mr-auto">
+            Edit
+          </Button>
+        </div>
       </form>
     );
   }
@@ -78,7 +80,7 @@ class ChangeEmail extends Component {
 
 function MapStateToProps(state) {
   return {
-    errorMessage: state.auth.errorMessage
+    errorMessage: state.auth.errorMessage,
   };
 }
 

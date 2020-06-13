@@ -29,14 +29,14 @@ class ChangeAvatar extends Component {
     this.state = {
       userCred: {
         currentPhoto: "",
-        newPhoto: ""
+        newPhoto: "",
       },
       user: {},
       file: "",
       imagePreviewUrl: "",
       name: "",
       status: "",
-      active: "edit"
+      active: "edit",
     };
     this.onSubmit = this.onSubmit.bind(this);
     this._handleImageChange = this._handleImageChange.bind(this);
@@ -47,12 +47,11 @@ class ChangeAvatar extends Component {
 
     let reader = new FileReader();
     let file = e.target.files[0];
-    let holder = "";
 
     reader.onloadend = () => {
       this.setState({
         imagePreviewUrl: reader.result,
-        photo: reader.result[1]
+        photo: reader.result[1],
       });
       this.props.change("avatar", reader.result);
     };
@@ -73,7 +72,7 @@ class ChangeAvatar extends Component {
       const response = await Axios.get("http://127.0.0.1:5001/users/profile");
       this.setState({
         user: response.data.response,
-        imagePreviewUrl: response.data.response.avatar
+        imagePreviewUrl: response.data.response.avatar,
       });
     } catch (e) {
       console.log(e);
@@ -89,12 +88,12 @@ class ChangeAvatar extends Component {
   }
 
   resizedataURL(datas, wantedWidth, wantedHeight) {
-    return new Promise(async function(resolve, reject) {
+    return new Promise(async function (resolve, reject) {
       // We create an image to receive the Data URI
       var img = document.createElement("img");
 
       // When the event "onload" is triggered we can resize the image.
-      img.onload = function() {
+      img.onload = function () {
         // We create a canvas and get its context.
         var canvas = document.createElement("canvas");
         var ctx = canvas.getContext("2d");
@@ -124,7 +123,7 @@ class ChangeAvatar extends Component {
     reader.onloadend = () => {
       this.setState({
         file: file,
-        imagePreviewUrl: reader.result
+        imagePreviewUrl: reader.result,
       });
       this.props.change("avatar", reader.result);
     };
@@ -139,29 +138,21 @@ class ChangeAvatar extends Component {
         src={this.state.user.avatar}
         width="200"
         roundedCircle
-        onClick={e => this._handleImageChange(e)}
+        onClick={(e) => this._handleImageChange(e)}
       />
     );
     return (
-      <form className="col-9" onSubmit={handleSubmit(this.onSubmit)}>
+      <form className="col-9 pt-4" onSubmit={handleSubmit(this.onSubmit)}>
         {this.props.errorMessage ? (
           <div className="alert alert-danger ">{this.props.errorMessage}</div>
         ) : null}
         <div className="row justify-content-center">
           <ImgUpload
-            onChange={e => this.photoUpload(e)}
+            onChange={(e) => this.photoUpload(e)}
             src={this.state.imagePreviewUrl}
           />
         </div>
         <div className="row justify-content-center">
-          {/* <Field
-            name="photo"
-            type="file"
-            id="photo"
-            width="20%"
-            onChange={e => this._handleImageChange(e)}
-            component={CustomInput}
-          /> */}
           <Field
             name="photo1"
             type="hidden"
@@ -170,7 +161,7 @@ class ChangeAvatar extends Component {
             onChange={this.onChange}
           />
         </div>
-        <div className="row justify-content-center ml-5 mr-5">
+        <div className="row justify-content-center ml-5 mr-5 pt-3">
           <Button type="submit" className="btn btn-block mr-auto">
             Edit
           </Button>
@@ -190,9 +181,7 @@ class ChangeAvatar extends Component {
           <div className="col-3 profile-menu">
             <ProfileSidebar />
           </div>
-          <div className="col-9 ">
-            <div className="container">{this.renderForm()}</div>
-          </div>
+          <div className="col-9 pt-4">{this.renderForm()}</div>
         </div>
       );
     }
@@ -205,7 +194,7 @@ class ChangeAvatar extends Component {
 
 function MapStateToProps(state) {
   return {
-    errorMessage: state.auth.errorMessage
+    errorMessage: state.auth.errorMessage,
   };
 }
 

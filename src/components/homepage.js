@@ -11,6 +11,7 @@ import SearchComponent from "./searchComponent";
 import OpenWithIcon from "@material-ui/icons/OpenWith";
 import MeetingRoomIcon from "@material-ui/icons/MeetingRoom";
 import MapContainer from "./mapContainer";
+import InfiniteScroll from "react-infinite-scroller";
 const { ipAdress } = require("../config");
 
 class Homepage extends Component {
@@ -28,6 +29,8 @@ class Homepage extends Component {
       longitude: null,
       latitude: null,
       markers: [],
+      hasMoreItems: true,
+      startOffset: 0,
     };
   }
 
@@ -35,19 +38,35 @@ class Homepage extends Component {
     this.setState({ [e.target.name]: e.target.value });
   };
 
-  async componentDidMount() {
+  loadPosts = (page) => {
     const ip_now = ipAdress + ":5001";
     const jwtToken = localStorage.getItem("JWT_TOKEN");
     Axios.defaults.headers.common["Authorization"] = jwtToken;
-    await Axios.get(ip_now + "/post/allPosts").then((Response) => {
-      this.setState(
-        {
-          posts: Response.data.posts,
-          pageCount: Math.ceil(Response.data.posts.length / this.state.perPage),
-        },
-        () => this.renderPosts()
-      );
+    Axios.post(ip_now + "/post/allPosts", {
+      startOffset: this.state.startOffset,
+    }).then((Response) => {
+      if (Response.data.posts.length > 0)
+        this.setState(
+          {
+            posts: [...this.state.posts, ...Response.data.posts],
+            //posts: this.state.posts.push(Response.data.posts)
+            startOffset: this.state.startOffset + 10,
+          },
+          () => {
+            this.renderPosts();
+          }
+        );
+      else
+        this.setState({
+          hasMoreItems: false,
+        });
     });
+  };
+
+  async componentDidMount() {
+    const ip_now = ipAdress + ":5001";
+    const jwtToken = localStorage.getItem("JWT_TOKEN");
+    this.loadPosts(jwtToken, ip_now);
     await Axios.get("https://ipapi.co/json/").then((Response) => {
       this.setState({
         latitude: Response.data.latitude,
@@ -57,76 +76,69 @@ class Homepage extends Component {
     await Axios.post(ip_now + "/post/LocationBasedPosts", {
       latitude: this.state.latitude,
       longitude: this.state.longitude,
-    }).then((Response) => {
-      let LatLngMarkers = [];
-      Response.data.posts.forEach((element) => {
-        LatLngMarkers.push({
-          lat: parseFloat(element.latitude),
-          lng: parseFloat(element.longitude),
-          _id: element._id,
+    }).then(
+      (Response) => {
+        let LatLngMarkers = [];
+        Response.data.posts.forEach((element) => {
+          LatLngMarkers.push({
+            lat: parseFloat(element.latitude),
+            lng: parseFloat(element.longitude),
+            _id: element._id,
+          });
         });
-      });
-      this.setState({ markers: LatLngMarkers, loading: false });
-      console.log(LatLngMarkers);
-    });
-  }
-
-  handlePageClick = (data) => {
-    const selectedPage = 1;
-    const offset = selectedPage * this.state.perPage;
-    this.setState(
-      {
-        currentPage: this.state.currentPage + 1,
-        offset: this.state.offset + this.state.perPage,
+        this.setState({ markers: LatLngMarkers, loading: false });
+        console.log(LatLngMarkers);
       },
-      () => {
-        this.renderPosts();
+      (error) => {
+        console.log(error);
+        this.setState({ markers: [], loading: false });
       }
     );
-  };
+  }
 
-  // setElementsForCurrentPage() {
-  //   let elements = this.state.posts
-  //     .slice(this.state.offset, this.state.offset + this.state.perPage)
-  //     .map(post => <img src="{post.thumburl}" />);
-  //   this.setState({ elements: elements });
-  // }
+  // handlePageClick = () => {
+  //   this.setState(
+  //     {
+  //       startOffset: this.state.startOffset + 10,
+  //     },
+  //     () => {
+  //       this.loadPosts();
+  //     }
+  //   );
+  // };
 
   renderPosts() {
-    let x = this.state.posts
-      .slice(0, this.state.offset + this.state.perPage)
-      // .reverse()
-      .map((n) => {
-        let $imagePreview = <img src={n.photoBase64} className="img-fluid" />;
-        return (
-          <Link to={"/post/" + n._id} style={{ textDecoration: "none" }}>
-            <div
-              className="row border border-2 justify-content-center m-3"
-              key={n._id}
-            >
-              <div className="col-md-3 col-sm-5 col-xs-3">{$imagePreview}</div>
-              <div className="col-md-4 col-sm-7 col-xs-4 pt-3">
-                <h4 align="center">
-                  <div className="d-inline-block">
-                    <MeetingRoomIcon fontSize="default" />
-                    {n.rooms + " room/s"}
-                  </div>
-                  <div className="d-inline-block pl-3">
-                    <OpenWithIcon fontSize="large" />
-                    {n.size + " m"}
-                    <sup>2</sup>
-                  </div>
-                </h4>
-                <p align="center">{n.location}</p>
-                <div align="center">
-                  <h3 className="d-inline-block pl-3">{n.price + "€"}</h3>
-                  <h5 className="d-inline-block pl-3">/month</h5>
+    let x = this.state.posts.slice(0, this.state.posts.length).map((n) => {
+      let $imagePreview = <img src={n.photoBase64} className="img-fluid" />;
+      return (
+        <Link to={"/post/" + n._id} style={{ textDecoration: "none" }}>
+          <div
+            className="row border border-2 justify-content-center m-3"
+            key={n._id}
+          >
+            <div className="col-md-3 col-sm-5 col-xs-3">{$imagePreview}</div>
+            <div className="col-md-4 col-sm-7 col-xs-4 pt-3">
+              <h4 align="center">
+                <div className="d-inline-block">
+                  <MeetingRoomIcon fontSize="default" />
+                  {n.rooms + " room/s"}
                 </div>
+                <div className="d-inline-block pl-3">
+                  <OpenWithIcon fontSize="large" />
+                  {n.size + " m"}
+                  <sup>2</sup>
+                </div>
+              </h4>
+              <p align="center">{n.location}</p>
+              <div align="center">
+                <h3 className="d-inline-block pl-3">{n.price + "€"}</h3>
+                <h5 className="d-inline-block pl-3">/month</h5>
               </div>
             </div>
-          </Link>
-        );
-      });
+          </div>
+        </Link>
+      );
+    });
     this.setState({ elements: x });
   }
 
@@ -182,21 +194,19 @@ class Homepage extends Component {
       lat: this.state.latitude - 0.5,
       lng: this.state.longitude - 0.5,
     };
-    let paginationElement;
-    if (this.state.currentPage < this.state.pageCount) {
-      paginationElement = (
-        <div className="row justify-content-center m-3">
-          <Button className="col-5" onClick={this.handlePageClick}>
-            Load More
-          </Button>
-        </div>
-      );
-    }
+    const loader = <div className="loader">Loading ...</div>;
     return (
       <div className="row">
-        <div className="contentContainer col-7 ">
-          {this.state.elements}
-          {paginationElement}
+        <div className="contentContainer col-7">
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={this.loadPosts.bind(this)}
+            hasMore={this.state.hasMoreItems}
+            loader={loader}
+            useWindow={true}
+          >
+            <div className="posts">{this.state.elements}</div>
+          </InfiniteScroll>
         </div>
         <div className="mapContainer col-5 ">
           <MapContainer
@@ -213,6 +223,7 @@ class Homepage extends Component {
     return (
       <>
         <div className="mr-0 pl-0 pr-0">
+          <SortBar />
           {this.state.loading ? this.renderSkeleton() : this.renderElments()}
         </div>
       </>

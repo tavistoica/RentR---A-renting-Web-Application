@@ -7,8 +7,11 @@ class SortBar extends Component {
   }
   render() {
     return (
-      <nav className="navbar navbar" style={{ backgroundColor: "#00ff40" }}>
-        <div className="container-fluid">pitong</div>
+      <nav
+        className="navbar navbar"
+        style={{ backgroundColor: "#495057", color: "white" }}
+      >
+        <div className="container-fluid">Filter Bar</div>
       </nav>
     );
   }

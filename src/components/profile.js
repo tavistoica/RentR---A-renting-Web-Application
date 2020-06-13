@@ -56,6 +56,13 @@ class Profile extends Component {
 
   renderPosts() {
     // const displayPosts = this.state.posts;
+    if (this.state.posts.length === 0) {
+      return (
+        <div className="row justify-content-center mt-5">
+          <h2 style={{ color: "grey" }}>No posts to show!</h2>
+        </div>
+      );
+    }
     let x = this.state.posts.map((n) => {
       let $imagePreview = <img src={n.photoBase64} className="img-fluid" />;
       return (
@@ -123,8 +130,6 @@ class Profile extends Component {
   }
 
   render() {
-    const { handleSubmit } = this.props;
-
     return <div className="container-fluid">{this.renderContent()}</div>;
   }
 }
